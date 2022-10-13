@@ -36,7 +36,7 @@
         <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
         <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
         <GenerateTestArtifacts>True</GenerateTestArtifacts>
-        <AppInstallerUri>https://github.com/NickWright25/DGLI.PrisonVan/tree/master/src/publish/installer.appinstaller</AppInstallerUri>
+        <AppInstallerUri>https://github.com/NickWright25/DGLI.PrisonVan/tree/master/src/deployment/installer.appinstaller</AppInstallerUri>
         <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
     </PropertyGroup>
 
