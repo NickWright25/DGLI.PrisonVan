@@ -1,0 +1,28 @@
+﻿<style>
+    .control-icon {
+        cursor: pointer;
+    }
+</style>
+<Row>
+    <Col Span="8">
+    <Icon Type="play-circle" Theme="outline" Height="50px" Width="50px" class="control-icon" OnClick="async () => await OnPlayAsync()" />
+    </Col>
+    <Col Span="8">
+    <Icon Type="pause-circle" Theme="outline" Height="50px" Width="50px" class="control-icon" OnClick="async () => await OnPauseAsync()" />
+    </Col>
+    <Col Span="8">
+    <Icon Type="stop" Theme="outline" Height="50px" Width="50px" class="control-icon" OnClick="async () => await OnStopAsync()" />
+    </Col>
+</Row>
+@code {
+    [Parameter]
+    public EventCallback OnPlayButtonClicked { get; set; }
+    [Parameter]
+    public EventCallback OnPauseButtonClicked { get; set; }
+    [Parameter]
+    public EventCallback OnStopButtonClicked { get; set; }
+
+    private async Task OnPlayAsync() => await OnPlayButtonClicked.InvokeAsync();
+    private async Task OnPauseAsync() => await OnPauseButtonClicked.InvokeAsync();
+    private async Task OnStopAsync() => await OnStopButtonClicked.InvokeAsync();
+}

@@ -1,0 +1,49 @@
+﻿<div class="top-row ps-3 navbar navbar-dark">
+	<div class="container-fluid">
+		<a class="navbar-brand" href="">MauiApp1</a>
+		<button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+	</div>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+	<nav class="flex-column">
+		<div class="nav-item px-3">
+			<NavLink class="nav-link" href="soundcontrol/dashboard" Match="NavLinkMatch.All">
+				<span class="oi oi-home" aria-hidden="true"></span> Dashboard
+			</NavLink>
+		</div>
+		<div class="nav-item px-3">
+			<NavLink class="nav-link" href="soundcontrol/soundcard/setup">
+				<span class="oi oi-cog" aria-hidden="true"></span> Sound Card Setup
+			</NavLink>
+		</div>
+		<div class="nav-item px-3">
+			<NavLink class="nav-link" href="soundcontrol/sequence/setup">
+				<span class="oi oi-cog" aria-hidden="true"></span> Sequence Setup
+			</NavLink>
+		</div>
+		<div class="nav-item px-3">
+			<NavLink class="nav-link" @onclick="@Exit">
+				<span class="oi oi-fullscreen-exit" aria-hidden="true"></span> Exit
+			</NavLink>
+		</div>
+	</nav>
+</div>
+
+@code {
+	private bool collapseNavMenu = true;
+
+	private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+	private void ToggleNavMenu()
+	{
+		collapseNavMenu = !collapseNavMenu;
+	}
+
+	private void Exit()
+	{
+		Application.Current?.CloseWindow(Application.Current.MainPage.Window);
+	}
+}

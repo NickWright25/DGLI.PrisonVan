@@ -1,0 +1,28 @@
+﻿.dashboard-container {
+    display: flex;
+}
+
+.configuration-viewer-area {
+    flex: 60%;
+    height: 100%;
+    margin: 10%;
+}
+
+.configuration-viewer.border {
+    border-color: black;
+    border-style: solid;
+    border-width: 2px;
+}
+
+.controls-area {
+    flex: 40%;
+}
+
+.ant-btn-xl{
+    height: 80px;
+    width: 80px;
+}
+
+.ant-btn-xl-icon {
+    font-size: 50px;
+}

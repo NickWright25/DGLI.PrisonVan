@@ -1,0 +1,20 @@
+﻿@using DGLI.PrisonVan.Data
+@switch (Status)
+{
+    case SoundFileStatus.Pending:
+        break;
+    case SoundFileStatus.Playing:
+        <p>...</p>
+        break;
+    case SoundFileStatus.Paused:
+        <Icon Type="pause"></Icon>
+        break;
+    case SoundFileStatus.Completed:
+        <Icon Type="check"></Icon>
+        break;
+                                
+}
+@code {
+    [Parameter]
+    public SoundFileStatus Status { get; set; }
+}

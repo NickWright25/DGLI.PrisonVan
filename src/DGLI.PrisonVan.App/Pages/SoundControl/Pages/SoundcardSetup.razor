@@ -1,0 +1,58 @@
+﻿@page "/soundcontrol/soundcard/setup"
+@using DGLI.PrisonVan.App.Data.Services
+@using DGLI.PrisonVan.Data
+@using NAudio.Wave
+@using System;
+@inject ISoundcardService soundcardService;
+
+<div style="padding-top: 10%; padding-right: 5%; padding-bottom: 5%;">
+    <Table TItem="Soundcard"
+           DataSource="dataSource">
+        <PropertyColumn Property="c=>c.ProductName" Sortable />
+        <PropertyColumn Width="30%" Property="c=>c.FriendlyName">
+            @if (editId == context.Id)
+            {
+                <Input Type="text" @bind-Value="context.FriendlyName" OnBlur="StopEdit" AutoFocus />
+            }
+            else
+            {
+                <div class="editable-cell-value-wrap" style="padding-right:24px" @onclick="()=>StartEdit(context.Id)">
+                    @context.FriendlyName
+                </div>
+            }
+        </PropertyColumn>
+    </Table>
+
+    <a href="soundcontrol/dashboard"><Button Type="@ButtonType.Default" Size="@ButtonSize.Large">Cancel</Button></a>
+    <Button Type="@ButtonType.Default" Size="@ButtonSize.Large" OnClick="async () => await SaveChangesAsync()">Save</Button>
+</div>
+@code {
+    private List<Soundcard> dataSource = new();
+    private int? editId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var soundCardConfigs = soundcardService.LoadConfigurations().ToList();
+        dataSource.AddRange(soundCardConfigs);
+        var devices = DirectSoundOut.Devices;
+        var newDevices = devices.Where(d => !soundCardConfigs.Any(c => c.ProductGuid == d.Guid));
+        dataSource.AddRange(newDevices.Select(d => new Soundcard() { ProductName = d.Description, ProductGuid = d.Guid, FriendlyName = d.Description }));
+        dataSource = (await soundcardService.UpdateRangeAsync(dataSource)).ToList();
+
+    }
+
+    private async Task SaveChangesAsync()
+    {
+        await soundcardService.UpdateRangeAsync(dataSource);
+    }
+
+    private void StartEdit(int id)
+    {
+        editId = id;
+    }
+
+    private void StopEdit()
+    {
+        editId = null;
+    }
+}

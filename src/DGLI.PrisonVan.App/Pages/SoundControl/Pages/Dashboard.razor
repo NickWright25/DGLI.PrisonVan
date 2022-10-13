@@ -1,0 +1,130 @@
+﻿@page "/soundcontrol/dashboard"
+@using DGLI.PrisonVan.App.Models
+@using DGLI.PrisonVan.Data;
+@using DGLI.PrisonVan.App.Data.Services;
+@using DGLI.PrisonVan.App.Pages.SoundControl.Components;
+@using NAudio.Wave;
+@implements IDisposable;
+@inject IAudiofileService audioFileService;
+
+<div>
+    <Row>
+        <Col Span="8">
+            <div style="padding-top: 15%; padding-left: 5%; padding-bottom: 5%;">
+                <Row Gutter="16">
+                    <Col Span="4"></Col>
+                    <Col Span="12">
+                        <PlaybackControls
+                            OnPlayButtonClicked="async () => await OnPlayAsync()"
+                            OnPauseButtonClicked="() => OnPause()"
+                            OnStopButtonClicked="() => OnStop()">
+                        </PlaybackControls>
+                    </Col>
+                    <Col Span="8"></Col>
+                </Row>
+            </div>
+        </Col>
+        <Col Span="16">
+            <div style="padding-top: 10%; padding-right: 5%; padding-bottom: 5%;">
+                <Table
+                    TItem="SoundFile"
+                    DataSource="dataSource">
+                    <PropertyColumn Property="c=>c.Sequence" Sortable />
+                    <PropertyColumn Property="c=>c.FileName" Sortable />
+                    <PropertyColumn Title="Status" Property="c => c.Status">
+                       <PlaybackIconStatus Status="context.Status"></PlaybackIconStatus>
+                    </PropertyColumn>
+                </Table>
+            </div>
+        </Col>
+    </Row>
+</div>
+@code {
+    private SoundFile[] dataSource;
+    private List<AudioPlaybackState> currentAudioOutputs = new();
+    private int currentSequenceNumber = 1;
+    private bool isPlaying = false;
+    
+    protected override void OnAfterRender(bool isFirstRender)
+    {
+        dataSource = audioFileService.LoadFiles()
+            .OrderBy(d => d.Sequence)
+            .ToArray();
+    }
+
+    private async Task OnPlayAsync()
+    {
+        isPlaying = true;
+        while (isPlaying)
+        {
+            var currentConfigs = dataSource.Where(d => d.Sequence == currentSequenceNumber);
+            if (!currentAudioOutputs.Any())
+            {
+                foreach (var config in currentConfigs)
+                {
+                    var outputDevice = new DirectSoundOut(config.Soundcard.ProductGuid);
+                    var audioFile = new AudioFileReader(config.FilePath);
+                    outputDevice.Init(audioFile);
+                    config.Status = SoundFileStatus.Pending;
+                    currentAudioOutputs.Add(new AudioPlaybackState(outputDevice, audioFile, config));
+                }
+            }
+
+            var audioOutputTasks = new List<Task>();
+            foreach (var audioOutput in currentAudioOutputs)
+            {
+                var outputDevice = audioOutput.Device;
+                audioOutputTasks.Add(Task.Run(() =>
+                {
+                    outputDevice.Play();
+                    audioOutput.SoundFile.Status = SoundFileStatus.Playing;
+                    while (outputDevice.PlaybackState == PlaybackState.Playing && isPlaying)
+                    {
+                        Thread.Sleep(100);
+                    }
+                }));
+            }
+
+            await Task.WhenAll(audioOutputTasks);
+
+            currentSequenceNumber++;
+            var stoppedPlaybackDeviceDelegate = (DirectSoundOut device) => device.PlaybackState == PlaybackState.Stopped;
+            foreach (var stoppedPlaybackDevice in currentAudioOutputs.Where(audioOutput => stoppedPlaybackDeviceDelegate(audioOutput.Device)))
+            {
+                stoppedPlaybackDevice.SoundFile.Status = SoundFileStatus.Completed;
+                stoppedPlaybackDevice.Device.Dispose();
+            }
+            currentAudioOutputs.RemoveAll(audioOutput => stoppedPlaybackDeviceDelegate(audioOutput.Device));
+
+            if (!currentAudioOutputs.Any() && !dataSource.Any(d => d.Sequence >= currentSequenceNumber))
+            {
+                isPlaying = false;
+            }
+        }
+    }
+
+    private void OnPause()
+    {
+        isPlaying = false;
+        foreach (var currentAudioOutput in currentAudioOutputs)
+        {
+            currentAudioOutput.Device.Pause();
+            currentAudioOutput.SoundFile.Status = SoundFileStatus.Paused;
+        }
+    }
+
+    private void OnStop()
+    {
+        isPlaying = false;
+        foreach (var currentAudioOutput in currentAudioOutputs)
+        {
+            currentAudioOutput.Device.Stop();
+            currentAudioOutput.SoundFile.Status = SoundFileStatus.Completed;
+        }
+    }
+
+    void IDisposable.Dispose()
+    {
+        currentAudioOutputs.ForEach(audioOutput => audioOutput.Device.Dispose());
+    }
+}

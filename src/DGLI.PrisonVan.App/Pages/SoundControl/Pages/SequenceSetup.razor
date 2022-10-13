@@ -1,0 +1,84 @@
+﻿@page "/soundcontrol/sequence/setup";
+@using DGLI.PrisonVan.Data;
+@using DGLI.PrisonVan.App.Data.Services;
+@inject IAudiofileService audioFileService;
+@inject ISoundcardService soundcardService;
+<div style="padding-top: 10%; padding-right: 5%; padding-bottom: 5%;">
+    <InputFile id="fileInput" OnChange="async (e) => await AddSoundFileAsync(e)" hidden />
+    <label class="ant-btn" for="fileInput">
+        <Icon Type="upload" />
+        Add
+    </label>
+    <Table TItem="SoundFile"
+           DataSource="dataSource">
+        <PropertyColumn Property="c=>c.Soundcard">
+            <Select 
+                TItem="Soundcard"
+                TItemValue="int?"
+                DataSource="@soundcards"
+		        @bind-Value="@context.SoundcardId"
+		        ValueName="@nameof(Soundcard.Id)"
+		        LabelName="@nameof(Soundcard.FriendlyName)"
+		        Style="width:120px"
+                Placeholder="Choose"
+                AllowClear>
+            </Select>
+        </PropertyColumn>
+        <PropertyColumn Property="c=>c.FileName">
+            <p>@context.FileName</p>
+        </PropertyColumn>
+        <PropertyColumn Property="c=>c.Sequence" Sortable>
+            <AntDesign.InputNumber 
+                @bind-Value="@context.Sequence">
+            </AntDesign.InputNumber>
+        </PropertyColumn>
+        <ActionColumn>
+            <Space>
+                <SpaceItem><Button Danger OnClick="async () => await DeleteAsync(context)">Delete</Button></SpaceItem>
+            </Space>
+        </ActionColumn>
+    </Table>
+
+    <a href="soundcontrol/dashboard"><Button Type="@ButtonType.Default" Size="@ButtonSize.Large">Cancel</Button></a>
+    <Button Type="@ButtonType.Default" Size="@ButtonSize.Large" OnClick="async () => await SaveChangesAsync()">Save Changes</Button>
+</div>
+@code {
+    private List<SoundFile> dataSource = new();
+    private List<Soundcard> soundcards = new();
+
+    protected override void OnInitialized()
+    {
+        soundcards = soundcardService.LoadConfigurations().ToList();
+        dataSource = audioFileService.LoadFiles().ToList();
+    }
+
+    private async Task AddSoundFileAsync(InputFileChangeEventArgs e)
+    {
+        var dataSourceCount = dataSource.Count;
+        var soundfile = new SoundFile()
+        {
+            Id = dataSource.MaxBy(x => x.Id).Id + 1,
+            FilePath = $@"{FileSystem.Current.AppDataDirectory}\files\{e.File.Name}",
+            FileSize = e.File.Size,
+            Sequence = dataSourceCount + 1,
+            Status = SoundFileStatus.Pending
+        };
+        soundfile.FileName = Path.GetFileName(soundfile.FilePath);
+        await using FileStream fs = new(soundfile.FilePath, FileMode.Create);
+        await e.File.OpenReadStream(50000000).CopyToAsync(fs);
+        soundfile = await audioFileService.AddAsync(soundfile);
+        dataSource.Add(soundfile);
+    }
+
+    private async Task DeleteAsync(SoundFile soundFile)
+    {
+        File.Delete(soundFile.FilePath);
+        await audioFileService.DeleteAsync(soundFile);
+        dataSource.Remove(soundFile);
+    }
+
+    private async Task SaveChangesAsync()
+    {
+        await audioFileService.UpdateRangeAsync(dataSource);
+    }
+}
