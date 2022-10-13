@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AppInstaller
-    xmlns="http://schemas.microsoft.com/appx/appinstaller/2017/2"
+    xmlns="http://schemas.microsoft.com/appx/appinstaller/2021"
     Version="1.0.0.0"
     Uri="https://github.com/NickWright25/DGLI.PrisonVan/tree/master/src/deployment/installer.appinstaller" >
 
     <MainPackage
         Name="43DDAE6A-7B44-4B23-8982-06416DB700ED"
-        Publisher="nickw_2bvryhv"
-        Version="0.0.1.0"
+        Publisher="CN=nickw_2bvryhv"
+        Version="1.0.0.1"
         ProcessorArchitecture="x64"
         Uri="https://github.com/NickWright25/DGLI.PrisonVan/tree/master/src/deployment/msix.msix" />
 
     <UpdateSettings>
         <OnLaunch 
-            HoursBetweenUpdateChecks="5" />
+            HoursBetweenUpdateChecks="12"
+            UpdateBlocksActivation="true"
+            ShowPrompt="true" />
         <AutomaticBackgroundTask />
+        <ForceUpdateFromAnyVersion>true</ForceUpdateFromAnyVersion>
     </UpdateSettings>
 </AppInstaller>

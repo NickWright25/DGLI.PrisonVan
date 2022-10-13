@@ -16,7 +16,7 @@
         <ApplicationTitle>DGLI.PrisonVan.App</ApplicationTitle>
 
         <!-- App Identifier -->
-        <ApplicationId>com.companyname.dgli.prisonvan.app</ApplicationId>
+        <ApplicationId>com.dgli.prisonvan.app</ApplicationId>
         <ApplicationIdGuid>43DDAE6A-7B44-4B23-8982-06416DB700ED</ApplicationIdGuid>
 
         <!-- Versions -->
@@ -38,6 +38,7 @@
         <GenerateTestArtifacts>True</GenerateTestArtifacts>
         <AppInstallerUri>https://github.com/NickWright25/DGLI.PrisonVan/tree/master/src/deployment/installer.appinstaller</AppInstallerUri>
         <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+        <Title>DGLI Prison Van</Title>
     </PropertyGroup>
 
     <ItemGroup>
