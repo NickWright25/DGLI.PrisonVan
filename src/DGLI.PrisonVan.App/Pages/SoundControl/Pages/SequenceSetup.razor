@@ -1,8 +1,16 @@
 ﻿@page "/soundcontrol/sequence/setup";
 @using DGLI.PrisonVan.Data;
 @using DGLI.PrisonVan.App.Data.Services;
+@using NAudio.Wave
 @inject IAudiofileService audioFileService;
 @inject ISoundcardService soundcardService;
+
+<style>
+    .row-disconnected-soundcard {
+        cursor: not-allowed !important;
+        background-color: #fff1f0 !important;
+    }
+</style>
 <div style="padding-top: 10%; padding-right: 5%; padding-bottom: 5%;">
     <InputFile id="fileInput" OnChange="async (e) => await AddSoundFileAsync(e)" hidden />
     <label class="ant-btn" for="fileInput">
@@ -10,7 +18,8 @@
         Add
     </label>
     <Table TItem="SoundFile"
-           DataSource="dataSource">
+           DataSource="dataSource"
+           RowClassName="@(c => RowClass(c.Data))">
         <PropertyColumn Property="c=>c.Soundcard">
             <Select 
                 TItem="Soundcard"
@@ -19,13 +28,12 @@
 		        @bind-Value="@context.SoundcardId"
 		        ValueName="@nameof(Soundcard.Id)"
 		        LabelName="@nameof(Soundcard.FriendlyName)"
-		        Style="width:120px"
                 Placeholder="Choose"
                 AllowClear>
             </Select>
         </PropertyColumn>
-        <PropertyColumn Property="c=>c.FileName">
-            <p>@context.FileName</p>
+        <PropertyColumn Title="File Name" Property="c=>c.FileName">
+            @context.FileName
         </PropertyColumn>
         <PropertyColumn Property="c=>c.Sequence" Sortable>
             <AntDesign.InputNumber 
@@ -57,7 +65,6 @@
         var dataSourceCount = dataSource.Count;
         var soundfile = new SoundFile()
         {
-            Id = dataSource.MaxBy(x => x.Id).Id + 1,
             FilePath = $@"{FileSystem.Current.AppDataDirectory}\files\{e.File.Name}",
             FileSize = e.File.Size,
             Sequence = dataSourceCount + 1,
@@ -80,5 +87,14 @@
     private async Task SaveChangesAsync()
     {
         await audioFileService.UpdateRangeAsync(dataSource);
+    }
+
+    private string RowClass(SoundFile soundfile)
+    {
+        var className = !DirectSoundOut.Devices.Any(d => d.Guid == soundfile?.Soundcard?.ProductGuid)
+        ? "row-disconnected-soundcard"
+        : null;
+
+        return className;
     }
 }

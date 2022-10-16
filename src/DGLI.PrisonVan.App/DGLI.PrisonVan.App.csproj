@@ -29,7 +29,7 @@
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
         <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
-        <GenerateAppInstallerFile>True</GenerateAppInstallerFile>
+        <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
         <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
         <PackageCertificateThumbprint>4A2E20733F2FB81AD19E7B01258AA39CB5D986FF</PackageCertificateThumbprint>
         <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
@@ -60,11 +60,18 @@
     </ItemGroup>
 
     <ItemGroup>
+      <None Remove="Pages\SoundControl\Pages\SequenceSetup.razor.css" />
+      <None Remove="Pages\SoundControl\Pages\SoundcardSetup.razor.css" />
       <None Remove="Pages\SoundControl\SoundControl.razor.css" />
     </ItemGroup>
 
     <ItemGroup>
       <Content Remove="Pages\SoundControl\Dashboard.razor.css" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="Pages\SoundControl\Pages\SequenceSetup.razor.css" />
+      <Content Include="Pages\SoundControl\Pages\SoundcardSetup.razor.css" />
     </ItemGroup>
 
     <ItemGroup>

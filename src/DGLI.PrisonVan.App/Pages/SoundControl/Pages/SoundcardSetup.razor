@@ -5,11 +5,18 @@
 @using System;
 @inject ISoundcardService soundcardService;
 
+<style>
+    .row-disconnected-soundcard {
+        cursor: not-allowed !important;
+        background-color: #fff1f0 !important;
+    }
+</style>
 <div style="padding-top: 10%; padding-right: 5%; padding-bottom: 5%;">
     <Table TItem="Soundcard"
-           DataSource="dataSource">
-        <PropertyColumn Property="c=>c.ProductName" Sortable />
-        <PropertyColumn Width="30%" Property="c=>c.FriendlyName">
+           DataSource="dataSource"
+           RowClassName="@(c => RowClass(c.Data))">
+        <PropertyColumn Title="Device Name" Property="c=>c.ProductName" Sortable />
+        <PropertyColumn Title="Friendly Name" Width="30%" Property="c=>c.FriendlyName">
             @if (editId == context.Id)
             {
                 <Input Type="text" @bind-Value="context.FriendlyName" OnBlur="StopEdit" AutoFocus />
@@ -54,5 +61,14 @@
     private void StopEdit()
     {
         editId = null;
+    }
+
+    private string RowClass(Soundcard soundcard)
+    {
+        var className = !DirectSoundOut.Devices.Any(d => d.Guid == soundcard.ProductGuid)
+        ? "row-disconnected-soundcard"
+        : null;
+
+        return className;
     }
 }

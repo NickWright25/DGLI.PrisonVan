@@ -5,9 +5,9 @@
     Uri="https://github.com/NickWright25/DGLI.PrisonVan/tree/master/src/deployment/installer.appinstaller" >
 
     <MainPackage
-        Name="43DDAE6A-7B44-4B23-8982-06416DB700ED"
+        Name="DGLI.PrisonVan.App"
         Publisher="CN=nickw_2bvryhv"
-        Version="1.0.0.1"
+        Version="0.0.0.4"
         ProcessorArchitecture="x64"
         Uri="https://github.com/NickWright25/DGLI.PrisonVan/tree/master/src/deployment/msix.msix" />
 

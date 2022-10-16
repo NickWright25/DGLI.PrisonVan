@@ -9,33 +9,27 @@
 
 <div>
     <Row>
-        <Col Span="8">
-            <div style="padding-top: 15%; padding-left: 5%; padding-bottom: 5%;">
-                <Row Gutter="16">
-                    <Col Span="4"></Col>
-                    <Col Span="12">
-                        <PlaybackControls
-                            OnPlayButtonClicked="async () => await OnPlayAsync()"
-                            OnPauseButtonClicked="() => OnPause()"
-                            OnStopButtonClicked="() => OnStop()">
-                        </PlaybackControls>
-                    </Col>
-                    <Col Span="8"></Col>
-                </Row>
-            </div>
+        <Col Span="7" Offset="1">
+            <Card Bordered="false" Title="Controls" Style="width: 300px">
+                <Body>
+                    <PlaybackControls 
+                        OnPlayButtonClicked="async () => await OnPlayAsync()"
+                        OnPauseButtonClicked="() => OnPause()"
+                        OnStopButtonClicked="() => OnStop()">
+                    </PlaybackControls>
+                </Body>
+            </Card>
         </Col>
-        <Col Span="16">
-            <div style="padding-top: 10%; padding-right: 5%; padding-bottom: 5%;">
-                <Table
-                    TItem="SoundFile"
-                    DataSource="dataSource">
-                    <PropertyColumn Property="c=>c.Sequence" Sortable />
-                    <PropertyColumn Property="c=>c.FileName" Sortable />
-                    <PropertyColumn Title="Status" Property="c => c.Status">
-                       <PlaybackIconStatus Status="context.Status"></PlaybackIconStatus>
-                    </PropertyColumn>
-                </Table>
-            </div>
+        <Col Span="13" Offset="2">
+            <Table
+                TItem="SoundFile"
+                DataSource="dataSource">
+                <PropertyColumn Property="c=>c.Sequence" Sortable />
+                <PropertyColumn Title="File Name" Property="c=>c.FileName" Sortable />
+                <PropertyColumn Title="Status" Property="c => c.Status">
+                    <PlaybackIconStatus Status="context.Status"></PlaybackIconStatus>
+                </PropertyColumn>
+            </Table>
         </Col>
     </Row>
 </div>
@@ -44,12 +38,18 @@
     private List<AudioPlaybackState> currentAudioOutputs = new();
     private int currentSequenceNumber = 1;
     private bool isPlaying = false;
-    
-    protected override void OnAfterRender(bool isFirstRender)
+    private bool isStopped = true;
+
+    protected override void OnInitialized()
     {
+        var devices = DirectSoundOut.Devices;
         dataSource = audioFileService.LoadFiles()
+            .Where(soundfile =>
+                soundfile.Soundcard is not null &&
+                devices.Any(device => device.Guid == soundfile.Soundcard.ProductGuid))
             .OrderBy(d => d.Sequence)
             .ToArray();
+        dataSource.ForEach(d => d.Status = SoundFileStatus.Pending);
     }
 
     private async Task OnPlayAsync()
@@ -87,7 +87,10 @@
 
             await Task.WhenAll(audioOutputTasks);
 
-            currentSequenceNumber++;
+            if (!isStopped)
+            {
+                currentSequenceNumber++;
+            }
             var stoppedPlaybackDeviceDelegate = (DirectSoundOut device) => device.PlaybackState == PlaybackState.Stopped;
             foreach (var stoppedPlaybackDevice in currentAudioOutputs.Where(audioOutput => stoppedPlaybackDeviceDelegate(audioOutput.Device)))
             {
@@ -115,12 +118,16 @@
 
     private void OnStop()
     {
+        isStopped = true;
         isPlaying = false;
+        currentSequenceNumber = 1;
         foreach (var currentAudioOutput in currentAudioOutputs)
         {
             currentAudioOutput.Device.Stop();
+            currentAudioOutput.Device.Dispose();
             currentAudioOutput.SoundFile.Status = SoundFileStatus.Completed;
         }
+        currentAudioOutputs.Clear();
     }
 
     void IDisposable.Dispose()

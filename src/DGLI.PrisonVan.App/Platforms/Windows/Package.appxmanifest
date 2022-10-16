@@ -5,7 +5,7 @@
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   IgnorableNamespaces="uap rescap">
 
-  <Identity Name="DGLI.PrisonVan.App" Publisher="CN=nickw_2bvryhv" Version="0.0.4.0" />
+  <Identity Name="DGLI.PrisonVan.App" Publisher="CN=nickw_2bvryhv" Version="0.0.8.0" />
 
   <Properties>
     <DisplayName>$placeholder$</DisplayName>
